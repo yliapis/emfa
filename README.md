@@ -8,7 +8,8 @@ Implimenting single factor analysis as present from the following paper
 
 * numpy
 * scipy
-* matplotlib
+* matplotlib 
+* jupyter
 
 
 For examples of the library in use, please look at the [Example.ipynb](https://github.com/yliapis/emfa/blob/master/examples/Example.ipynb) notebook
