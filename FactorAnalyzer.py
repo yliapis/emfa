@@ -45,15 +45,16 @@ class FactorAnalyzer:
 
         # misc
         I = np.eye(k)
-        epsilon = 10**-9
-        Epsilon = Psi * epsilon # avoid numerical intability in Psi_inverse
+        #epsilon = 10**-9
+        #Epsilon = Psi * epsilon # avoid numerical intability in Psi_inverse
         inv = np.linalg.inv
-        ### Run EM
+        c = (p/2)*np.log(2*np.pi)
         LL = [] # log likelihood history
         ll, ll_old = 0, 0
+        ### Run EM
         for i in range(iters):
             ### E - step
-            Psi_i = (1/(np.diag(Psi)+Epsilon))*mask # easy inverse
+            Psi_i = (1/(np.diag(Psi)))*mask # easy inverse
             PLL = (Psi_i - Psi_i@Lambda@\
                              inv(I + Lambda.T@Psi_i@Lambda)@\
                              Lambda.T@Psi_i)
@@ -64,7 +65,7 @@ class FactorAnalyzer:
                 (beta @ (X.T@X) @ beta.T) #k x k
             ### Compute Log Likelihood
             ll_old = ll
-            ll = (p/2)*np.log(2*np.pi)-(n/2)*np.linalg.det(Psi) - \
+            ll = c-(n/2)*np.linalg.det(Psi) - \
                 ((.5*(X@Psi_i*X).sum() -(X@Psi_i@Lambda*E_zx.T).sum()) + \
                 np.trace(Lambda.T@Psi_i@Lambda@E_zzx))
             
@@ -74,16 +75,20 @@ class FactorAnalyzer:
             Psi = mask * (X.T@X - \
                           Lambda@E_zx@X)/n
             ###
-            if i <=2:
-                base = ll
-            elif (ll-base) < (1+tol)*(ll_old-base) or np.isnan(ll):
-                break
             if verbose:                
                 print("cycle {}, log-likelihood {}".format(i+1, ll))
-                #print(Psi_i)
+            if i <=2:
+                base = ll
+            elif (ll-base) < (1+tol)*(ll_old-base) and (ll-ll_old) < 0.0:
+                print("\tbreaking, LL={}".format(ll))
+                break
+            elif np.isnan(ll):
+                print("\tbreaking: NaN")
+                break
         ###
         self.LL = LL
         self.Lambda = Lambda
         self.Psi = Psi
-        return self.Lambda, self.Psi
+        #
+        return Lambda, Psi
 

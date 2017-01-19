@@ -9,3 +9,6 @@ Implimenting single factor analysis as present from the following paper
 * numpy
 * scipy
 * matplotlib
+
+
+For examples of the library in use, please look at the [Example.ipynb]() notebook
