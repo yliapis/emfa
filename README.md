@@ -11,4 +11,4 @@ Implimenting single factor analysis as present from the following paper
 * matplotlib
 
 
-For examples of the library in use, please look at the [Example.ipynb]() notebook
+For examples of the library in use, please look at the [Example.ipynb](https://github.com/yliapis/emfa/blob/master/Example.ipynb) notebook
