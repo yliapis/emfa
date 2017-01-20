@@ -7,9 +7,7 @@ class FactorAnalyzer:
             "The EM algorithm for mixtures of factor analyzers", Ghahrmani
         
         Naming convensions are used as in paper
-            k: number of factors
-            p: number of observed variables
-                        
+                                    
     '''
     
     def __init__(self, n_factors=3):
@@ -42,7 +40,6 @@ class FactorAnalyzer:
         Lambda = np.random.rand(p,k).astype(np.float64)*scale
         mask = np.eye(p)
         Psi = mask * cX.astype(np.float64)
-
         # misc
         I = np.eye(k)
         #epsilon = 10**-9
@@ -51,6 +48,9 @@ class FactorAnalyzer:
         c = (p/2)*np.log(2*np.pi)
         LL = [] # log likelihood history
         ll, ll_old = 0, 0
+        #precompute
+        XX = X.T @ X 
+        X2 = X**2
         ### Run EM
         for i in range(iters):
             ### E - step
@@ -59,21 +59,20 @@ class FactorAnalyzer:
                              inv(I + Lambda.T@Psi_i@Lambda)@\
                              Lambda.T@Psi_i)
             beta = Lambda.T@PLL # k x p
-            E_zx = beta @ X.T #k x n
+            #E_zx = beta @ X.T #k x n
             # multiply 2 terms by n to compensate for summation
             E_zzx = I*n - n*beta@Lambda + \
-                (beta @ (X.T@X) @ beta.T) #k x k
+                (beta @ XX @ beta.T) #k x k
             ### Compute Log Likelihood
             ll_old = ll
             ll = c-(n/2)*np.linalg.det(Psi) - \
-                ((.5*(X@Psi_i*X).sum() -(X@Psi_i@Lambda*E_zx.T).sum()) + \
+                ((.5*(X2@Psi_i).sum() -(X2@Psi_i@(Lambda*beta.T)).sum()) + \
                 np.trace(Lambda.T@Psi_i@Lambda@E_zzx))
             
             LL.append(ll)
             ### M - step
-            Lambda = (X.T@E_zx.T) @ inv(E_zzx)
-            Psi = mask * (X.T@X - \
-                          Lambda@E_zx@X)/n
+            Lambda = (XX @ beta.T) @ inv(E_zzx) #
+            Psi = mask * (XX - Lambda@beta@XX)/n
             ###
             if verbose:                
                 print("cycle {}, log-likelihood {}".format(i+1, ll))
